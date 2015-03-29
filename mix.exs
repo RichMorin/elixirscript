@@ -5,7 +5,7 @@ defmodule ExToJS.Mixfile do
     [app: :ex_to_js,
      version: "0.1.0",
      elixir: "~> 1.0",
-     compilers: Mix.compilers ++ [:npm],
+     compilers: Mix.compilers,
      escript: escript_config,
      deps: deps,
      description: description,
@@ -14,13 +14,14 @@ defmodule ExToJS.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :poison]]
+    [applications: [:logger, :poison, :erlang_js]]
   end
 
   defp deps do
     [
       { :poison, "~> 1.3" },
-      { :estree, github: "bryanjos/elixir-estree"}
+      { :estree, github: "bryanjos/elixir-estree"},
+      {:erlang_js, github: "basho/erlang_js", tag: "1.3.0"}
     ]
   end
 

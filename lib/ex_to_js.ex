@@ -1,5 +1,9 @@
 defmodule ExToJS do
 
+  defmodule Parser do
+    defexception [:message]
+  end
+
   @doc """
   Parses Elixir code string into JavaScript AST
   """
@@ -66,21 +70,25 @@ defmodule ExToJS do
   """
   @spec javascript_ast_to_code(ESTree.Node.t) :: {:ok, binary} | {:error, binary}
   def javascript_ast_to_code(js_ast) do
-    js_ast = Poison.encode!(js_ast)
-
     path = try do
-      Mix.Project.build_path <> "/lib/ex_to_js/priv/escodegen"
+      Mix.Project.build_path <> "/lib/ex_to_js/priv/vendor/ast_to_js.js"
     rescue
       UndefinedFunctionError ->
-        "/Users/bryanjos/projects/basstype/ex_to_js/priv/escodegen"
+        "priv/vendor/ast_to_js.js"
     end
 
-    case System.cmd(path, [js_ast]) do
-      {js_code, 0} ->
-        {:ok, js_code }
-      {error, _} ->
-        {:error, error}
-    end
+    IO.puts(path)
+
+    {:ok, js} = :js_driver.new()
+
+    {:ok, escodegen} = File.read path
+    :ok = :js.define(js, escodegen)
+    {:ok, json} = Poison.encode(js_ast)
+
+
+    {status, result} = :js.call(js, "createCode", [json])
+    :js_driver.destroy(js)
+    {status, result}
   end
 
   @doc """
