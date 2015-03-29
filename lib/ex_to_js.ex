@@ -77,9 +77,9 @@ defmodule ExToJS do
         "priv/vendor"
     end
 
-    {_, alphonse } = Enum.map_reduce(["escodegen.browser.js", "alphonse.js"], "", fn(x, combined) ->
-      {:ok, js } = File.read(path <> "/" <> x)
-      { nil, combined <> "\n" <> js }
+    alphonse = Enum.reduce(["escodegen.browser.js", "alphonse.js"], "", fn(x, combined) ->
+      {:ok, js } = File.read "#{path}/#{x}"
+      "#{combined}\n#{js}"
     end)
 
     {:ok, js} = :js_driver.new()
