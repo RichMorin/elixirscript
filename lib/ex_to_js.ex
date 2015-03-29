@@ -71,18 +71,20 @@ defmodule ExToJS do
   @spec javascript_ast_to_code(ESTree.Node.t) :: {:ok, binary} | {:error, binary}
   def javascript_ast_to_code(js_ast) do
     path = try do
-      Mix.Project.build_path <> "/lib/ex_to_js/priv/vendor/ast_to_js.js"
+      Mix.Project.build_path <> "/lib/ex_to_js/priv/vendor"
     rescue
       UndefinedFunctionError ->
-        "priv/vendor/ast_to_js.js"
+        "priv/vendor"
     end
 
-    IO.puts(path)
+    {_, alphonse } = Enum.map_reduce(["escodegen.browser.js", "alphonse.js"], "", fn(x, combined) ->
+      {:ok, js } = File.read(path <> "/" <> x)
+      { nil, combined <> "\n" <> js }
+    end)
 
     {:ok, js} = :js_driver.new()
 
-    {:ok, escodegen} = File.read path
-    :ok = :js.define(js, escodegen)
+    :ok = :js.define(js, alphonse)
     {:ok, json} = Poison.encode(js_ast)
 
 
