@@ -130,13 +130,13 @@ defmodule ElixirScript.Translator do
   end
 
 
-#  defp do_translate({:try, _, [ [do: do_block, rescue: clauses, after: after_block] ]}) do
-#    Control.make_try(do_block, clauses, after_block)
-#  end
-#
-#  defp do_translate({:try, _, [ [do: do_block, rescue: clauses] ]}) do
-#    Control.make_try(do_block, clauses)
-#  end
+  defp do_translate({:try, _, [ [do: do_block, rescue: clauses, after: after_block] ]}) do
+    Control.make_try(do_block, clauses, after_block)
+  end
+
+  defp do_translate({:try, _, [ [do: do_block, rescue: clauses] ]}) do
+    Control.make_try(do_block, clauses)
+  end
 
   defp do_translate({:try, _, _expressions}) do
     raise ElixirScript.UnsupportedError, ":try"

@@ -306,27 +306,41 @@ defmodule ElixirScript.Translator.Control do
       Builder.block_statement(List.wrap(Translator.translate(try_block))),
       Builder.catch_clause(
         Builder.identifier(:e),
-        Builder.block_statement(translate_rescue_clauses(rescue_clauses)) 
+        Builder.block_statement(List.wrap(translate_rescue_clauses(rescue_clauses)))
       ),
       nil
     )
   end
 
   def translate_rescue_clauses(clauses) do
-    Enum.map(clauses, fn(x) ->
+    block_statement = Builder.block_statement([Builder.throw_statement(Builder.identifier(:e))])
+
+    Enum.reduce(clauses, block_statement, fn(x, current_ast) ->
       case x do
-        {:->, _, [[error_name], block]} ->
+        {:->, _, [[{:__aliases__, _, error_name}], block]} ->
           {body, _} = PatternMatching.build_pattern_matched_body(
             List.wrap(Translator.translate(block)), 
-            [error_name],
+            [{:%, [], [{:__aliases__, [alias: false], error_name}, {:%{}, [], []}]}],
             fn(_index) ->
-              Translator.translate(error_name)
+              Builder.identifier(:e)
             end, 
             nil
           )
 
-          IO.inspect(body)
-          hd(body)    
+          body = hd(body)
+          %{ body | alternate: current_ast}
+        {:->, _, [[error], block]} ->
+          {body, _} = PatternMatching.build_pattern_matched_body(
+            List.wrap(Translator.translate(block)), 
+            [error],
+            fn(_index) ->
+              Builder.identifier(:e)
+            end, 
+            nil
+          )
+
+          body = hd(body)
+          %{ body | alternate: current_ast}        
       end
     end)
   end

@@ -2,13 +2,14 @@ defmodule ElixirScript.Translator.Try.Test do
   use ShouldI
   import ElixirScript.TestHelper
 
-  should "translate " do
+  should "translate try with rescue" do
     ex_ast = quote do
       try do
         do_something_that_may_fail(some_arg)
       rescue
         ArgumentError ->
           IO.puts "Invalid argument given"
+        [UndefinedFunctionError] -> nil
       end
     end
 
@@ -16,7 +17,7 @@ defmodule ElixirScript.Translator.Try.Test do
       try{
         do_something_that_may_fail(some_arg);
       } catch(e){
-        if(Kernel.match({__struct__: 'ArgumentError'}, e)){
+        if(Kernel.match({ '__struct__': [Atom('ArgumentError')] }, e)){
           IO.puts('Invalid argument given');
         }else{
           throw e;
